@@ -10,10 +10,23 @@ from src.logging.log import setup_logger, load_config
 import config as config
 
 class NpyToWavConverter:
-    def __init__(self, config_path):
+    """
+    Converts numpy audio arrays (.npy) to WAV files for a set of subjects.
+    """
+    def __init__(self, config_path: str):
+        """
+        Initialize the NpyToWavConverter with configuration.
+        Args:
+            config_path (str): Path to the YAML configuration file.
+        """
         self.setup_config(config_path)
    
-    def setup_config(self, config_path):
+    def setup_config(self, config_path: str):
+        """
+        Load configuration and set up directories and parameters.
+        Args:
+            config_path (str): Path to the YAML configuration file.
+        """
         self.config = load_config(config_path)
         self.input_dir = os.path.abspath(self.config.get("input_dir"))
         self.output_dir = os.path.abspath(self.config.get("output_dir"))
@@ -25,7 +38,14 @@ class NpyToWavConverter:
         log_path = os.path.join(self.log_dir, "npy-audio-conversion.log")
         self.logger = setup_logger('NpyToWavConverter', log_path)
 
-    def load_npy(self, npy_path):
+    def load_npy(self, npy_path: Path):
+        """
+        Load a numpy file and return the audio array.
+        Args:
+            npy_path (Path): Path to the .npy file.
+        Returns:
+            np.ndarray or None: Loaded audio array, or None if loading fails.
+        """
         self.logger.info(f"Loading numpy file: {npy_path}")
         try:
             array = np.load(npy_path)
@@ -34,9 +54,13 @@ class NpyToWavConverter:
             self.logger.error(f"Failed to load numpy file {npy_path}: {e}")
             return None
 
-    def convert(self, subject_id):      
+    def convert(self, subject_id: str):
+        """
+        Convert a subject's numpy audio file to a WAV file.
+        Args:
+            subject_id (str): The subject identifier (zero-padded string).
+        """
         npy_path = Path(self.input_dir, f"P{subject_id}_audio.npy")
-
         self.logger.info(f"Starting conversion for subject '{subject_id}': {npy_path}")
 
         if not npy_path.exists():
@@ -73,7 +97,13 @@ class NpyToWavConverter:
         except Exception as e:
             self.logger.error(f"Error converting '{subject_id}': {e}")
 
-    def save_audio(self, audio, subject_id):
+    def save_audio(self, audio: np.ndarray, subject_id: str):
+        """
+        Save the audio array as a WAV file for a subject.
+        Args:
+            audio (np.ndarray): Audio array to save.
+            subject_id (str): The subject identifier (zero-padded string).
+        """
         wav_path = os.path.join(self.output_dir, f"P{subject_id}_audio.wav")
         self.logger.info(f"Saving WAV file to: {wav_path}")
         try:
@@ -84,8 +114,11 @@ class NpyToWavConverter:
 
 
 def npy_to_wav_converter():
+    """
+    Batch process all subjects to convert numpy audio files to WAV files.
+    """
     config_path = Path(config.CUR_DIR, 'configs/npy_to_wav.yaml')
     for index in range(1, 31):
-        subject =  str(index).zfill(2)
+        subject = str(index).zfill(2)
         converter = NpyToWavConverter(config_path=config_path)
         converter.convert(subject_id=subject)

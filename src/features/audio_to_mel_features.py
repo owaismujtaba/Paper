@@ -9,12 +9,25 @@ from pathlib import Path
 from src.logging.log import setup_logger, load_config
 
 class AudioFeatureExtractor:
+    """
+    Extracts mel spectrogram features from audio files for a set of subjects.
+    """
 
-    def __init__(self, config_path):
+    def __init__(self, config_path: str):
+        """
+        Initialize the AudioFeatureExtractor with configuration.
+        Args:
+            config_path (str): Path to the YAML configuration file.
+        """
         self.setup_config(config_path)
 
 
-    def setup_config(self, config_path):
+    def setup_config(self, config_path: str):
+        """
+        Load configuration and set up directories and parameters.
+        Args:
+            config_path (str): Path to the YAML configuration file.
+        """
         self.config = load_config(config_path)
         self.input_dir = os.path.abspath(self.config.get("input_dir"))
         self.output_dir = os.path.abspath(self.config.get("output_dir"))
@@ -28,7 +41,12 @@ class AudioFeatureExtractor:
         self.logger = setup_logger('AudioFeatureExtractor', log_path)
 
 
-    def save_feature(self, subject_id):
+    def save_feature(self, subject_id: str):
+        """
+        Save the extracted mel features for a subject to a .npy file.
+        Args:
+            subject_id (str): The subject identifier (zero-padded string).
+        """
         mel_path = os.path.join(self.output_dir, f"P{subject_id}_mel_features.npy")
         try:
             np.save(mel_path, self.mel_features)
@@ -37,7 +55,14 @@ class AudioFeatureExtractor:
             self.logger.error(f"Failed to save feature to {mel_path}: {e}")
 
 
-    def load_wav_file(self, wav_path):
+    def load_wav_file(self, wav_path: Path):
+        """
+        Load a WAV file and return the audio array and sample rate.
+        Args:
+            wav_path (Path): Path to the WAV file.
+        Returns:
+            Tuple[np.ndarray, int]: Audio array and sample rate, or (None, None) if failed.
+        """
         self.logger.info(f"Loading WAV file: {wav_path}")
         try:
             y, sr = librosa.load(wav_path, sr=self.audio_sample_rate)
@@ -47,7 +72,12 @@ class AudioFeatureExtractor:
             return None, None
 
 
-    def convert(self, subject_id):
+    def convert(self, subject_id: str):
+        """
+        Convert a subject's WAV file to a mel spectrogram and store in the instance.
+        Args:
+            subject_id (str): The subject identifier (zero-padded string).
+        """
         wav_path = Path(self.input_dir, f"P{subject_id}_audio.wav")
         self.logger.info(f"Starting conversion for subject '{subject_id}': {wav_path}")
         try:
@@ -71,10 +101,13 @@ class AudioFeatureExtractor:
 
 
 def audio_to_mel_features():
+    """
+    Batch process all subjects to extract mel features from their audio files.
+    """
     config_path = "configs/feature_extraction.yaml"
     extractor = AudioFeatureExtractor(config_path)
     for subject_id in range(1, 31): 
-        subject_id = str(subject_id).zfill(2)
-        extractor.convert(subject_id)
-        extractor.save_feature(subject_id)
+        subject_id_str = str(subject_id).zfill(2)
+        extractor.convert(subject_id_str)
+        extractor.save_feature(subject_id_str)
 
