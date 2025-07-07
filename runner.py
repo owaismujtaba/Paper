@@ -23,7 +23,10 @@ if config.FEATURE_EXTRACTION:
 
 
 
-
+from src.features.dataloader import EEGMelDataLoader
+dataloader = EEGMelDataLoader(config_path=Path(config.CUR_DIR, 'configs/feature_extraction.yaml'))
+eeg, mel = dataloader.load_subject(subject_id='01')
+print(eeg.shape, mel.shape)
 
 
 
