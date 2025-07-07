@@ -7,25 +7,18 @@ log_dir = Path(config.CUR_DIR, "logs")
 log_path = Path(log_dir, "runner.log")
 logger = setup_logger('runner', log_path)
 
+
 if config.NPY_WAV_CONERSION:
     from src.audio.npy_to_audio import npy_to_wav_converter
     logger.info(f'Converting numpy files to wav files')
     npy_to_wav_converter()
 
-if config.WAV_MEL_CONVERSION:
-    logger.info(f'Converting wav files to mel spectrograms')
-    from src.audio.audio_to_mel import AudioToMelConverter
-    config_path = Path(os.getcwd(), "configs/wav_to_mel.yaml")
-    converter = AudioToMelConverter(config_path)
-    converter.convert()
-
-if config.EEG_FEATURES_EXTRACTION:
-    logger.info(f'Extracting EEG Features')
-    from src.eeg.eeg_to_features import extract_eeg_features
-    config_path = Path(config.CUR_DIR, 'configs/eeg_to_features.yaml')
-    extract_eeg_features(
-        config_path=config_path
-    )
+if config.FEATURE_EXTRACTION:
+    logger.info(f'Feature Extraction')
+    from src.features.audio_to_mel_features import audio_to_mel_features
+    from src.features.eeg_to_features import extract_eeg_features
+    #audio_to_mel_features()
+    extract_eeg_features()
 
 
 

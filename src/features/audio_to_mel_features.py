@@ -24,7 +24,7 @@ class AudioFeatureExtractor:
         self.frame_shift = int(self.audio_sample_rate * self.config.get("frame_shift", 0.01))
         self.log_dir = os.path.abspath(self.config.get("log_dir", "logs"))
         os.makedirs(self.log_dir, exist_ok=True)
-        log_path = os.path.join(self.log_dir, "audio-mel-feature-extraction.log")
+        log_path = os.path.join(self.log_dir, "feature-extraction.log")
         self.logger = setup_logger('AudioFeatureExtractor', log_path)
 
 
@@ -66,16 +66,15 @@ class AudioFeatureExtractor:
             self.mel_features = mel_spec
 
             # mel_db = librosa.power_to_db(mel_spec, ref=np.max)
-            self.save_feature()
         except Exception as e:
             self.logger.error(f"Error processing subject '{subject_id}': {e}")
 
 
-def audio_to_mel_featues():
+def audio_to_mel_features():
     config_path = "configs/feature_extraction.yaml"
     extractor = AudioFeatureExtractor(config_path)
     for subject_id in range(1, 31): 
         subject_id = str(subject_id).zfill(2)
         extractor.convert(subject_id)
-        extractor.save_feature()
+        extractor.save_feature(subject_id)
 

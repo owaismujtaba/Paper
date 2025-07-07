@@ -3,14 +3,10 @@ from pathlib import Path
 
 
 CUR_DIR = os.getcwd()
-NPY_WAV_CONERSION = True
-WAV_MEL_CONVERSION = False
+NPY_WAV_CONERSION = False
 
-EEG_FEATURES_EXTRACTION = False
+FEATURE_EXTRACTION = True
 
-FRAME_DURATION='16ms'
 
-EEG_LOADING = False
-MEL_LOADINF = False
 
 TRAIN = False
