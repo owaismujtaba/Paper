@@ -28,7 +28,7 @@ class AudioFeatureExtractor:
         self.logger = setup_logger('AudioFeatureExtractor', log_path)
 
 
-    def save_feature(self):
+    def save_feature(self, subject_id):
         mel_path = os.path.join(self.output_dir, f"P{subject_id}_mel_features.npy")
         try:
             np.save(mel_path, self.mel_features)
@@ -41,14 +41,14 @@ class AudioFeatureExtractor:
         wav_path = Path(self.input_dir, f"P{subject_id}_audio.wav")
         
 
-        if not os.path.exists(npy_path):
+        if not os.path.exists(wav_path):
             self.logger.error(f"Numpy file for subject '{subject_id}' does not exist: {npy_path}")
             sys.exit(1)
 
         os.makedirs(self.output_dir, exist_ok=True)
 
         try:
-           y, original_sr = librosa.load(wav_path, sr=self.audio_sample_rate)  
+            y, original_sr = librosa.load(wav_path, sr=self.audio_sample_rate)  
             # Optionally check shape/dtype here
             mel_spec = librosa.feature.melspectrogram(
                 y=y,

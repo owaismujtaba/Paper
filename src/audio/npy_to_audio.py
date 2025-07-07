@@ -88,3 +88,4 @@ def npy_to_wav_converter():
     for index in range(1, 31):
         subject =  str(index).zfill(2)
         converter = NpyToWavConverter(config_path=config_path)
+        converter.convert(subject_id=subject)

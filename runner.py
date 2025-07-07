@@ -8,11 +8,9 @@ log_path = Path(log_dir, "runner.log")
 logger = setup_logger('runner', log_path)
 
 if config.NPY_WAV_CONERSION:
-    from src.audio.npy_to_audio import NpyToWavConverter
+    from src.audio.npy_to_audio import npy_to_wav_converter
     logger.info(f'Converting numpy files to wav files')
-    config_path = Path(os.getcwd(), "configs/npy_to_wav.yaml")
-    converter = NpyToWavConverter(config_path)
-    converter.convert()
+    npy_to_wav_converter()
 
 if config.WAV_MEL_CONVERSION:
     logger.info(f'Converting wav files to mel spectrograms')
