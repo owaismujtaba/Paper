@@ -1,4 +1,5 @@
 import os
+import pdb
 from pathlib import Path
 import config as config
 from src.logging.log import setup_logger, load_config
@@ -23,15 +24,12 @@ if config.FEATURE_EXTRACTION:
 
 
 
-from src.features.dataloader import EEGMelDataLoader
-dataloader = EEGMelDataLoader(config_path=Path(config.CUR_DIR, 'configs/feature_extraction.yaml'))
-eeg, mel = dataloader.load_subject(subject_id='01')
-print(eeg.shape, mel.shape)
+
 
 
 
 if config.TRAIN:
-    from src.neural.models.neuroincept_decoder import NeuroInceptDecoder
+    from src.features.dataloader import EEGMelDataLoader
     from src.neural.trainner import ModelTrainer
     from src.utils.normalization import z_score_normalize
 
@@ -40,45 +38,26 @@ if config.TRAIN:
     
     subject = '01'
 
-    if train_config.get('load_eeg'):
-        from src.neural.data.eeg_data_loader import EEGDataLoader
+    dataloader = EEGMelDataLoader(config_path=Path(config.CUR_DIR, 'configs/feature_extraction.yaml'))
+    eeg_feat, mel_feat = dataloader.load_subject(subject_id=subject)
+    print(eeg_feat.shape, mel_feat.shape)
+
         
-        logger.info(f'Loading EEG features')
-        dataloader = EEGDataLoader(subject=subject)
-        eeg_feat = dataloader.get_eeg_features()
+
+    input_shape = (eeg_feat.shape[1], eeg_feat.shape[2])
+    model_dir = train_config.get('model_dir')
+
+    if model_dir == 'NeuroIncept':
+        from src.neural.models.neuroincept_decoder import NeuroInceptDecoder
+        model = NeuroInceptDecoder(input_shape=input_shape, output_shape=128)
     
-    if train_config.get('load_mel'):
-        from src.neural.data.audio_data_loader import AudioDataLoader
+    if model == 'NeuralNetwork':
+        from src.neural.models.neural_network import NeuralNetwork
+        model = NeuralNetwork(input_shape=(16*127,), output_shape=128)
         
-        logger.info(f'Loading Mel Spectropgrams')
-        dataloader = AudioDataLoader(subject=subject)
-        mel_feat = dataloader.get_mels().T
-
-    if train_config.get('load_eeg') and  train_config.get('load_mel'):    
-        print(eeg_feat.shape, mel_feat.shape)
-        min_len = min(len(mel_feat), len(eeg_feat))
-        mel_feat = mel_feat[:min_len]
-        eeg_feat = eeg_feat[:min_len]
-        print(eeg_feat.shape, mel_feat.shape)
-
-        input_shape = (eeg_feat.shape[1], eeg_feat.shape[2])
-        model_name =  train_config.get('model')
-        model_dir = train_config.get('model_dir')
-        
-        if model_name == 'NeuroIncept':
-            model = NeuroInceptDecoder(input_shape=input_shape, output_shape=128)
-        if model_name == 'NeuralNetwork':
-            from src.neural.models.neural_network import NeuralNetwork
-            model = NeuralNetwork(input_shape=(16*127,), output_shape=128)
-        
-        X = z_score_normalize(eeg_feat)
-        trainner = ModelTrainer(model_name=model_name, subject_id=subject, model_dir=model_dir)
-        trainner.train_model(model=model, X=X, y=mel_feat)
-
-
-
-    else:
-        print('Set eeg and mel loding to True')
+    X = z_score_normalize(eeg_feat)
+    trainner = ModelTrainer(model_name=model_dir, subject_id=subject, model_dir=model_dir)
+    trainner.train_model(model=model, X=X, y=mel_feat)
 
 
     

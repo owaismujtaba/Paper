@@ -9,4 +9,4 @@ FEATURE_EXTRACTION = False
 
 
 
-TRAIN = False
+TRAIN = True

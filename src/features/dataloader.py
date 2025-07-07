@@ -1,7 +1,8 @@
 import os
 import numpy as np
+from src.logging.log import load_config
 
-
+import pdb
 
 class EEGMelDataLoader:
     """
@@ -33,6 +34,7 @@ class EEGMelDataLoader:
         if not os.path.exists(mel_path):
             raise FileNotFoundError(f"Mel features file not found: {mel_path}")
         eeg = np.load(eeg_path)
+        eeg = eeg.reshape((eeg.shape[0], eeg.shape[1], -1))
         mel = np.load(mel_path)
         mel = mel.T
         
