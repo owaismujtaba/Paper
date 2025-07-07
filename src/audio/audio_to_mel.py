@@ -8,49 +8,69 @@ from pathlib import Path
 
 from src.logging.log import setup_logger, load_config
 
-class AudioToMelConverter:
+class AudioFeatureExtractor:
+
     def __init__(self, config_path):
+        self.setup_config(config_path)
+
+
+    def setup_config(self, config_path):
         self.config = load_config(config_path)
         self.input_dir = os.path.abspath(self.config.get("input_dir"))
         self.output_dir = os.path.abspath(self.config.get("output_dir"))
-        self.sample_rate = self.config.get("sample_rate", 16000)
+        self.audio_sample_rate = self.config.get("audio_sample_rate", 16000)
         self.n_mels = self.config.get("n_mels", 80)
-        self.window_size = int(self.sample_rate*self.config.get("window_size", 0.05))
-        self.frame_shift = int(self.sample_rate*self.config.get("frame_shift", 0.01))
+        self.window_size = int(self.audio_sample_rate * self.config.get("window_size", 0.05))
+        self.frame_shift = int(self.audio_sample_rate * self.config.get("frame_shift", 0.01))
         self.log_dir = os.path.abspath(self.config.get("log_dir", "logs"))
         os.makedirs(self.log_dir, exist_ok=True)
-        log_path = os.path.join(self.log_dir, "audio-mel-conversion.log")
-        self.logger = setup_logger('AudioToMelConverter',log_path)
-    
+        log_path = os.path.join(self.log_dir, "audio-mel-feature-extraction.log")
+        self.logger = setup_logger('AudioFeatureExtractor', log_path)
 
-    def convert(self):
-        if not os.path.exists(self.input_dir):
-            self.logger.error(f"Input directory does not exist: {self.input_dir}")
+
+    def save_feature(self):
+        mel_path = os.path.join(self.output_dir, f"P{subject_id}_mel_features.npy")
+        try:
+            np.save(mel_path, self.mel_features)
+            self.logger.info(f"Saved feature: {mel_path}")
+        except Exception as e:
+            self.logger.error(f"Failed to save feature to {mel_path}: {e}")
+
+
+    def convert(self, subject_id):
+        wav_path = Path(self.input_dir, f"P{subject_id}_audio.wav")
+        
+
+        if not os.path.exists(npy_path):
+            self.logger.error(f"Numpy file for subject '{subject_id}' does not exist: {npy_path}")
             sys.exit(1)
 
         os.makedirs(self.output_dir, exist_ok=True)
 
-        files = [f for f in os.listdir(self.input_dir) if f.lower().endswith(".wav")]
-        self.logger.info(f"Found {len(files)} .wav files to convert")
+        try:
+           y, original_sr = librosa.load(wav_path, sr=self.audio_sample_rate)  
+            # Optionally check shape/dtype here
+            mel_spec = librosa.feature.melspectrogram(
+                y=y,
+                sr=self.sample_rate,
+                n_fft=self.window_size,
+                hop_length=self.frame_shift,
+                n_mels=self.n_mels,
+                power=2.0,
+            )
+            self.mel_features = mel_spec
 
-        for file in files:
-            wav_path = os.path.join(self.input_dir, file)
-            mel_path = os.path.join(self.output_dir, file.replace(".wav", "_mel.npy"))
+            # mel_db = librosa.power_to_db(mel_spec, ref=np.max)
+            self.save_feature()
+        except Exception as e:
+            self.logger.error(f"Error processing subject '{subject_id}': {e}")
 
-            try:
-                y, original_sr = librosa.load(wav_path, sr=self.sample_rate)  
-                mel_spec = librosa.feature.melspectrogram(
-                    y=y,
-                    sr=self.sample_rate,
-                    n_fft=self.window_size,
-                    hop_length=self.frame_shift,
-                    n_mels=self.n_mels,
-                    power=2.0,
-                )
-                #mel_db = librosa.power_to_db(mel_spec, ref=np.max)
 
-                np.save(mel_path, mel_spec)
-                self.logger.info(f"Saved mel spectrogram: {mel_path}")
+def audio_to_mel_featues():
+    config_path = "configs/feature_extraction.yaml"
+    extractor = AudioFeatureExtractor(config_path)
+    for subject_id in range(1, 31): 
+        subject_id = str(subject_id).zfill(2)
+        extractor.convert(subject_id)
+        extractor.save_feature()
 
-            except Exception as e:
-                self.logger.error(f"Error processing '{file}': {e}")
