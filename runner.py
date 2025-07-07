@@ -17,7 +17,7 @@ if config.FEATURE_EXTRACTION:
     logger.info(f'Feature Extraction')
     from src.features.audio_to_mel_features import audio_to_mel_features
     from src.features.eeg_to_features import extract_eeg_features
-    #audio_to_mel_features()
+    audio_to_mel_features()
     extract_eeg_features()
 
 

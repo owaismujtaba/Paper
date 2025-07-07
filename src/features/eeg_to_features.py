@@ -189,7 +189,6 @@ class EEGFeaturesExtractor:
         self.eeg_freq_band_features = np.array(feat)
         self.logger.info(f'Done Extracting frequency band envelopes for sEEG')
 
-        pdb.set_trace()
 
         return self.eeg_freq_band_features
 
@@ -224,7 +223,6 @@ class EEGFeaturesExtractor:
         subject : str
             ID of the subject.
         """
-        pdb.set_trace()
         self._load_eeg(subject_id=subject)
 
         self._clean_eeg()
