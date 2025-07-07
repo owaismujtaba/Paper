@@ -1,0 +1,3 @@
+input_dir: "data/mels"
+audio_sr: 16000
+log_dir: "logs"

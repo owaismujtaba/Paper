@@ -1,0 +1,8 @@
+input_dir: "data/npy"
+eeg_sr: 1024
+audio_sr: 16000
+window_size : 0.05
+frame_shift: 0.01
+model_order : 4
+step_size: 5
+log_dir: "logs"

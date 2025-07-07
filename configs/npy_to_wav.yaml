@@ -1,0 +1,6 @@
+input_dir: "data/npy"
+output_dir: "data/wav"
+sample_rate: 16000
+original_sr: 48000
+normalize_audio: true
+log_dir: "logs"

@@ -1,0 +1,6 @@
+model_dir: 'NeuralNetwork'
+load_eeg : True
+load_mel: True
+batch_size: 32
+epochs : 100
+model : 'NeuralNetwork'

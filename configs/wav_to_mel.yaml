@@ -1,0 +1,7 @@
+input_dir: "data/wav"
+output_dir: "data/mels"
+sample_rate: 16000
+n_mels: 128
+window_size: 0.05
+frame_shift: 0.01
+log_dir: "./logs"
