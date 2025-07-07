@@ -37,22 +37,27 @@ class AudioFeatureExtractor:
             self.logger.error(f"Failed to save feature to {mel_path}: {e}")
 
 
+    def load_wav_file(self, wav_path):
+        self.logger.info(f"Loading WAV file: {wav_path}")
+        try:
+            y, sr = librosa.load(wav_path, sr=self.audio_sample_rate)
+            return y, sr
+        except Exception as e:
+            self.logger.error(f"Failed to load WAV file {wav_path}: {e}")
+            return None, None
+
+
     def convert(self, subject_id):
         wav_path = Path(self.input_dir, f"P{subject_id}_audio.wav")
-        
-
-        if not os.path.exists(wav_path):
-            self.logger.error(f"Numpy file for subject '{subject_id}' does not exist: {npy_path}")
-            sys.exit(1)
-
-        os.makedirs(self.output_dir, exist_ok=True)
-
+        self.logger.info(f"Starting conversion for subject '{subject_id}': {wav_path}")
         try:
-            y, original_sr = librosa.load(wav_path, sr=self.audio_sample_rate)  
+            y, original_sr = self.load_wav_file(wav_path)
+            if y is None:
+                return
             # Optionally check shape/dtype here
             mel_spec = librosa.feature.melspectrogram(
                 y=y,
-                sr=self.sample_rate,
+                sr=self.audio_sample_rate,
                 n_fft=self.window_size,
                 hop_length=self.frame_shift,
                 n_mels=self.n_mels,
