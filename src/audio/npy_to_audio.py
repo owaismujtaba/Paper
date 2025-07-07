@@ -7,6 +7,7 @@ import librosa
 from pathlib import Path
 
 from src.logging.log import setup_logger, load_config
+import config as config
 
 class NpyToWavConverter:
     def __init__(self, config_path):
@@ -70,3 +71,10 @@ class NpyToWavConverter:
             self.logger.info(f"Saved WAV: {wav_path}")
         except Exception as e:
             self.logger.error(f"Failed to save WAV to {wav_path}: {e}")
+
+
+def npy_to_wav_converter():
+    config_path = Path(config.CUR_DIR, 'configs/npy_to_wav.yaml')
+    for index in range(1, 31):
+        subject =  str(index).zfill(2)
+        converter = NpyToWavConverter(config_path=config_path)
