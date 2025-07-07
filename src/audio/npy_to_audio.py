@@ -25,6 +25,14 @@ class NpyToWavConverter:
         log_path = os.path.join(self.log_dir, "npy-audio-conversion.log")
         self.logger = setup_logger('NpyToWavConverter', log_path)
 
+    def load_npy(self, npy_path):
+        self.logger.info(f"Loading numpy file: {npy_path}")
+        try:
+            array = np.load(npy_path)
+            return array
+        except Exception as e:
+            self.logger.error(f"Failed to load numpy file {npy_path}: {e}")
+            return None
 
     def convert(self, subject_id):      
         npy_path = Path(self.input_dir, f"P{subject_id}_audio.npy")
@@ -38,7 +46,9 @@ class NpyToWavConverter:
         os.makedirs(self.output_dir, exist_ok=True)
 
         try:
-            audio = np.load(npy_path)
+            audio = self.load_npy(npy_path)
+            if audio is None:
+                return
             # Optional: check shape/dtype, normalize, resample, etc.
             if audio.ndim > 2:
                 self.logger.warning(f"Skipping {npy_path}, unexpected shape {audio.shape}")
