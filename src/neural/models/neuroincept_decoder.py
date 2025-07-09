@@ -3,6 +3,7 @@ from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras import layers, Model, Input
 from tensorflow.keras.layers import GRU, Input, Conv1D, MaxPooling1D, concatenate, Dense, Flatten, Reshape
 
+from src.utils.metrics import negative_pcc_loss
 import pdb
 
 import config as config
@@ -13,7 +14,6 @@ early_stopping = EarlyStopping(
     restore_best_weights=True, 
     verbose=1
 )
-
 
 class NeuroInceptDecoder:
     def __init__(self, input_shape, output_shape):
@@ -70,7 +70,7 @@ class NeuroInceptDecoder:
 
         output_layer = Dense(self.output_shape, activation='linear')(x)
         model = Model(inputs=input_layer, outputs=output_layer)
-        model.compile(optimizer='adam', loss='mse')
+        model.compile(optimizer='adam', loss=negative_pcc_loss)
         return model
     
     def train(self, X_train, y_train):
@@ -78,9 +78,11 @@ class NeuroInceptDecoder:
         
         #X_train = X_train.reshape(X_train.shape[0], self.input_shape[0], 1)
         #y_train = y_train.reshape(y_train.shape[0], -1)
-        self.model.fit(X_train, y_train,
+        history = self.model.fit(X_train, y_train,
             batch_size=32, 
-            epochs=10, 
+            epochs=100, 
             validation_split=0.10,
             callbacks=[early_stopping]
         )
+
+        return history
